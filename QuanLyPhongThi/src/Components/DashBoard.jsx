@@ -1,10 +1,14 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 import React, { useEffect, useState } from 'react';
 import '../Css/AdminDashboard.css';
 import '../Css/ComputerTab.css';
 
 function AdminDashboard() {
     const [dataDash, setDataDash] = useState([]);
+<<<<<<< HEAD
     const [dataBlackList, setDataBlackList] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [dataListVirus, setDataListVirus] = useState([]); // State cho virus notifications
@@ -124,10 +128,33 @@ function AdminDashboard() {
         // Cleanup khi component unmount
         return () => clearInterval(intervalId);
     }, [dataBlackList]);
+=======
+    const [searchText, setSearchText] = useState('');
+
+    useEffect(() => {
+        const fetchData = () => {
+            fetch('http://localhost:8080/info')
+                .then(response => response.json())
+                .then(data => {
+                    setDataDash(data);
+                    console.log(data);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        };
+
+        fetchData(); // Gọi ngay lần đầu khi component mount
+
+        const intervalId = setInterval(fetchData, 5000); // Gọi mỗi 2 giây
+
+        // Cleanup khi component unmount để tránh memory leak
+        return () => clearInterval(intervalId);
+    }, []);
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 
 
     // chọn phần mềm để cài đặt
     const handleSoftwareInstall = (macAddress, softwareName) => {
+<<<<<<< HEAD
         if (!softwareName) return;
 
         const token = localStorage.getItem('authToken'); // Lấy Token
@@ -135,6 +162,9 @@ function AdminDashboard() {
             alert("Lỗi: Không tìm thấy JWT Token!");
             return;
         }
+=======
+        if (!softwareName) return; // bỏ qua nếu chưa chọn gì
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 
         const payload = {
             macAddress: macAddress,
@@ -144,8 +174,12 @@ function AdminDashboard() {
         fetch('http://localhost:8080/sendCommandToAgent', {
             method: 'POST',
             headers: {
+<<<<<<< HEAD
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` // Bổ sung JWT Token
+=======
+                'Content-Type': 'application/json'
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
             },
             body: JSON.stringify(payload)
         })
@@ -153,7 +187,11 @@ function AdminDashboard() {
                 if (response.ok) {
                     alert(`Đã gửi yêu cầu cài ${softwareName} đến máy ${macAddress}`);
                 } else {
+<<<<<<< HEAD
                     alert("Gửi yêu cầu thất bại! (Kiểm tra Token và Server)");
+=======
+                    alert("Gửi yêu cầu thất bại!");
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
                 }
             })
             .catch(error => {
@@ -166,18 +204,24 @@ function AdminDashboard() {
     const toggleFirewall = async (macAddress, currentStatus) => {
         const newStatus = currentStatus === 'on' ? 'off' : 'on';
 
+<<<<<<< HEAD
         const token = localStorage.getItem('authToken'); // Lấy Token
         if (!token) {
             alert("Lỗi: Không tìm thấy JWT Token!");
             return;
         }
 
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
         try {
             const response = await fetch('http://localhost:8080/sendFirewallCommand', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+<<<<<<< HEAD
                     'Authorization': `Bearer ${token}`, // Bổ sung JWT Token
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
                 },
                 body: JSON.stringify({
                     macAddress: macAddress,
@@ -195,7 +239,11 @@ function AdminDashboard() {
                     )
                 );
             } else {
+<<<<<<< HEAD
                 alert('Lỗi khi gửi lệnh firewall! (Kiểm tra Token và Server)');
+=======
+                alert('Lỗi khi gửi lệnh firewall!');
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
             }
         } catch (error) {
             console.error('Lỗi khi gửi lệnh firewall:', error);
@@ -204,6 +252,10 @@ function AdminDashboard() {
     };
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     const countOnlineComputers = () => {
         return filteredData.filter(computer => computer.status === 'on').length;
     };
@@ -212,6 +264,7 @@ function AdminDashboard() {
         return filteredData.filter(computer => computer.status === 'off').length;
     };
 
+<<<<<<< HEAD
     // Helper functions for Virus Features
     const getInfectedMacs = () => {
         // Use v.macAddress (from getMacAddress() in backend) or fallback to v.computer?.macAddress
@@ -373,6 +426,14 @@ function AdminDashboard() {
             </span>
         );
     };
+=======
+    // Tạo danh sách máy đã lọc dựa trên searchText
+    const filteredData = dataDash.filter(item =>
+        item.macAddress.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.nameComputer.toLowerCase().includes(searchText.toLowerCase()) ||
+        item.ipAddress.toLowerCase().includes(searchText.toLowerCase())
+    );
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     return (
         <div className="admin-dashboard">
             <header className="header">
@@ -394,6 +455,7 @@ function AdminDashboard() {
                             <h2>🔴 Offline PCs</h2>
                             <p>{countOffineComputers()} / {filteredData.length}</p>
                         </div>
+<<<<<<< HEAD
 
                         <div
                             className={`card violation-card-style ${countViolatingComputers(dataDash) > 0 ? 'violating-pulse' : ''}`}
@@ -415,6 +477,8 @@ function AdminDashboard() {
                                 {countInfectedComputers} <span style={{ fontSize: '0.8em', fontWeight: 'normal', color: '#6b7280' }}>máy bị nhiễm</span>
                             </p>
                         </div>
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
                     </div>
                 </div>
             </div>
@@ -444,14 +508,18 @@ function AdminDashboard() {
                             <th>IP</th>
                             <th>Trạng thái</th>
                             <th>Phần mềm đang chạy</th>
+<<<<<<< HEAD
                             <th style={{ backgroundColor: '#fee2e2', color: '#991b1b', fontWeight: 'bold' }}>VI PHẠM</th>
                             <th>Bảo trì</th>
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
                             <th>Firewall</th>
                             <th>Cài phần mềm</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
+<<<<<<< HEAD
                             filteredData.map((computer, index) => {
                                 const localMac = computer.macAddress?.toLowerCase().trim();
                                 const isInfected = infectedMacs.includes(localMac);
@@ -523,13 +591,70 @@ function AdminDashboard() {
                                     </tr>
                                 );
                             })
+=======
+                            filteredData.map((computer, index) => (
+                                <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{computer.nameComputer} ({computer.macAddress})</td>
+                                    <td>{computer.ipAddress}</td>
+                                    <td>
+                                        <span className={computer.status === 'on' ? "status-on" : "status-off"}>
+                                            {computer.status}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {computer.status === 'off' ? (
+                                            <span className="status-off">off</span>
+                                        ) : (
+                                            computer.softwareStatuses
+                                                .filter(software => software.status === "running")
+                                                .map((software, i, arr) => (
+                                                    <span key={i}>
+                                                        {software.softwareName}{i < arr.length - 1 ? ", " : ""}
+                                                    </span>
+                                                ))
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        <button
+                                            onClick={() => toggleFirewall(computer.macAddress, computer.statusFirewall)}
+                                            className={computer.statusFirewall === 'on' ? "statusFire-on" : "statusFire-off"}
+                                        >
+                                            {computer.statusFirewall === 'on' ? 'on' : 'off'}
+                                        </button>
+                                    </td>
+
+                                    <td>
+                                        <select
+                                            className="select-install"
+                                            onChange={(e) => handleSoftwareInstall(computer.macAddress, e.target.value)}
+                                        >
+                                            <option value="">Chọn</option>
+                                            <option value="download">unikey</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="unikey">Unikey</option>
+                                        </select>
+
+                                        {/* <a href="#">Xem</a> <a href="#">Tắt máy</a> */}
+                                    </td>
+                                </tr>
+                            ))
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
                         }
                     </tbody>
                 </table>
             </div>
+<<<<<<< HEAD
             <VirusModal />
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
         </div>
     );
 }
 
+<<<<<<< HEAD
 export default AdminDashboard;
+=======
+export default AdminDashboard;
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b

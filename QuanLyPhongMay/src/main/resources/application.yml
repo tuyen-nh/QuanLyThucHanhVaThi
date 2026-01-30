@@ -3,6 +3,10 @@ spring:
     url: jdbc:mysql://localhost:3306/quanlyphongmay?useSSL=false
     username: root
     password: Tuyen04@
+<<<<<<< HEAD
+=======
+
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,8 +15,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
         physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+<<<<<<< HEAD
 ---
 # CẤU HÌNH API KEY ĐÃ SỬA LỖI:
 agent:
   api:
     key: "SECRET_AGENT_KEY_12345"
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b

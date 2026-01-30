@@ -46,6 +46,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+<<<<<<< HEAD
 		<dependency>
     		<groupId>com.microsoft.onnxruntime</groupId>
     		<artifactId>onnxruntime</artifactId>
@@ -60,6 +61,8 @@
 			<groupId>jakarta.annotation</groupId>
 			<artifactId>jakarta.annotation-api</artifactId>
 		</dependency>
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 
 	</dependencies>
 

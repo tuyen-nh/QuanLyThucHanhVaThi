@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import { useState } from 'react';
 // import '../Css/signIn.css';
 // import {useNavigate } from 'react-router-dom';
@@ -73,6 +74,8 @@
 // }
 
 
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 import { useState } from 'react';
 import '../Css/signIn.css';
 import {useNavigate } from 'react-router-dom';
@@ -83,7 +86,11 @@ export default function SignIn() {
     password: ''
   });
   const Navigate = useNavigate()
+<<<<<<< HEAD
   
+=======
+  // 1 hàm dùng chung cho tất cả input
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
   const handleOnChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -94,10 +101,15 @@ export default function SignIn() {
 
   const handelSubmid = (e) => {
     e.preventDefault();
+<<<<<<< HEAD
+=======
+    console.log("Dữ liệu gửi đi:", formData); // kiểm tra trước khi gửi
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 
     fetch('http://localhost:8080/apt/login', {
       method: 'POST',
       headers: {
+<<<<<<< HEAD
         'Content-Type': 'application/json' 
       },
       body: JSON.stringify(formData)
@@ -124,11 +136,27 @@ export default function SignIn() {
     .catch(err => {
       console.error("Lỗi đăng nhập:", err.message || err);
       alert(err.message || "Tên đăng nhập hoặc mật khẩu không đúng."); // Thông báo lỗi cho người dùng
+=======
+        'Content-Type': 'application/json' // sửa đúng headers
+      },
+      body: JSON.stringify(formData)
+    })
+    .then(res => res.text())
+    .then(data => {
+      console.log("Phản hồi từ server:", data)
+      Navigate("/DashBoard")
+    })
+    .catch(err => {
+      console.error("Lỗi gửi dữ liệu:", err)
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     });
   }
 
   return (
+<<<<<<< HEAD
     // ... (Phần UI không đổi)
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     <div className="container">
       <h2 className="title">Đăng nhập</h2>
       <form className="form" onSubmit={handelSubmid}>
@@ -160,4 +188,8 @@ export default function SignIn() {
       </form>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b

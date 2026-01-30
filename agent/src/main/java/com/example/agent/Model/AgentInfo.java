@@ -9,7 +9,10 @@ public class AgentInfo {
     private Status status;
     private FirewallStatus statusFirewall;
     private Timestamp timestamp;
+<<<<<<< HEAD
     private int useTime;
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 
     public enum Status {
         on, off
@@ -29,6 +32,7 @@ public class AgentInfo {
         this.statusFirewall = statusFirewall;
         this.timestamp = timestamp;
     }
+<<<<<<< HEAD
     public AgentInfo(String nameComputer, String ipAddress, String macAddress, Status status, FirewallStatus statusFirewall, Timestamp timestamp, int useTime) {
         this.nameComputer = nameComputer;
         this.ipAddress = ipAddress;
@@ -38,6 +42,8 @@ public class AgentInfo {
         this.timestamp = timestamp;
         this.useTime = useTime;
     }
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 
     public FirewallStatus getStatusFirewall() {
         return statusFirewall;
@@ -86,10 +92,13 @@ public class AgentInfo {
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
+<<<<<<< HEAD
     public int getUseTime() {
         return useTime;
     }
     public void setUseTime(int useTime) {
         this.useTime = useTime;
     }
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 }
