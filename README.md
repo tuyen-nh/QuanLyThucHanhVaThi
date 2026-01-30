@@ -11,12 +11,14 @@ QuanLyPhongMay (Backend): Xây dựng bằng Java Spring Boot, quản lý cơ s�
 QuanLyPhongThi (Frontend): Giao diện quản trị viên phát triển trên nền tảng React, hỗ trợ giám sát thời gian thực.
 agent (Client side): Ứng dụng chạy ngầm trên máy trạm để thu thập thông tin và thực hiện quét mã độc tại chỗ.
 ModelAiPredict (AI Engine): Trái tim của hệ thống bảo mật, chứa mô hình Machine Learning.
+
 3 Tính năng AI (AI Features)
 Đây là phần trọng tâm ứng dụng công nghệ AI để bảo vệ hệ thống:
 Mô hình: Sử dụng thuật toán Random Forest được huấn luyện để phân loại file mã độc.
 Trích xuất đặc trưng: Hệ thống tự động trích xuất 12 đặc trưng kỹ thuật từ các tệp tin PE (Portable Executable).
 Triển khai: Mô hình được xuất dưới định dạng ONNX, cho phép module agent (Java) thực hiện dự đoán với tốc độ cao và tiêu tốn ít tài nguyên.
 Giám sát: Tự động gửi cảnh báo về Dashboard khi phát hiện tệp tin nghi vấn thông qua FileWatcherService.
+
 4 Công nghệ sử dụng
 Languages: Java, Python, JavaScript.
 Frameworks: Spring Boot, React, Vite.
