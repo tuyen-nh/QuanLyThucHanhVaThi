@@ -1,0 +1,51 @@
+.computer-table {
+    width: 100%;
+    margin: 20px 0;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+  
+  .status-on {
+    color: green;
+    font-weight: bold;
+  }
+  .status-off {
+    color: red;
+    font-weight: bold;
+  }
+  .statusFire-on {
+    color: green;
+    font-weight: bold;
+  }
+  .statusFire-off {
+    color: red;
+    font-weight: bold;
+  }
+  
+  .firewall-enabled {
+    color: gold;
+    font-weight: bold;
+  }
+  
+  a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: blue;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
