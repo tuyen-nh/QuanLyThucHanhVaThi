@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
 import React, { useEffect, useState } from 'react';
 import '../Css/AdminDashboard.css';
 import '../Css/ComputerTab.css';
@@ -119,7 +123,12 @@ function AdminDashboard() {
         fetchWithAuth('http://localhost:8080/sendCommandToAgent', {
             method: 'POST',
             headers: {
+<<<<<<< HEAD
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Bổ sung JWT Token
+=======
                 'Content-Type': 'application/json'
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
             },
             body: JSON.stringify(payload)
         })
@@ -140,6 +149,15 @@ function AdminDashboard() {
     const toggleFirewall = async (macAddress, currentStatus) => {
         const newStatus = currentStatus === 'on' ? 'off' : 'on';
 
+<<<<<<< HEAD
+        const token = localStorage.getItem('authToken'); // Lấy Token
+        if (!token) {
+            alert("Lỗi: Không tìm thấy JWT Token!");
+            return;
+        }
+
+=======
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
         try {
             const response = await fetchWithAuth('http://localhost:8080/sendFirewallCommand', {
                 method: 'POST',
@@ -171,6 +189,7 @@ function AdminDashboard() {
     };
 
 
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     const countOnlineComputers = () => {
         return filteredData.filter(computer => computer.status === 'on').length;
     };
@@ -564,4 +583,7 @@ function AdminDashboard() {
     );
 }
 
+<<<<<<< HEAD
+export default AdminDashboard;
+=======
 export default AdminDashboard;

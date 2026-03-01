@@ -65,6 +65,7 @@ public class AgentService {
         }
     }
 
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     // lấy trạng thái tường lửa
     private FirewallStatus getFirewallStatus() {
         try {
@@ -92,6 +93,7 @@ public class AgentService {
         return FirewallStatus.unknown;
     }
 
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     // gửi trạng thái lên server
     public void sendStatus() {
         try {

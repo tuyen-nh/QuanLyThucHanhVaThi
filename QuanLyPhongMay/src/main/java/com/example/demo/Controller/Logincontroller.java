@@ -39,6 +39,7 @@ public class Logincontroller {
         this.userRepository = userRepository;
     }
 
+>>>>>>> c98faf91730db1699998a2a9b9f3871b99c96d9b
     @GetMapping("/todos")
     public List<Computer> getAll() {
         return computerRepository.findAll();
