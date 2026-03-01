@@ -8,23 +8,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Component
 public class TaskOfComputer {
     private final AgentService reporter;
-    
 
     public TaskOfComputer(AgentService reporter) {
         this.reporter = reporter;
-        
+
     }
 
-//    @PostMapping
+    // @PostMapping
     // chạy lại sau mỗi 60s
     @Scheduled(fixedRate = 60000)
     public void reportStatus() {
-        System.out.println("111");
+        System.out.println("Running scheduled task...");
         reporter.sendStatus();
         reporter.getRunningApplications();
     }
-
-
-
 
 }

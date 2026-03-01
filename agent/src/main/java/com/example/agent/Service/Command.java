@@ -1,28 +1,37 @@
 package com.example.agent.Service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 @Service
 public class Command {
+    @Value("${agent.api.key:}")
+    private String apiKey;
+
+    @Autowired
+    private AiService aiService;
+
     private void sendProgressToServer(int percent) {
         try {
-            URL serverUrl = new URL("http://localhost:8080/progress?percent=" + percent); // sửa theo URL dashboard của bạn
+            URL serverUrl = new URL("http://localhost:8080/progress?percent=" + percent); // sửa theo URL dashboard
             HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();
             conn.setRequestMethod("GET");
+            if (apiKey != null && !apiKey.isBlank()) {
+                conn.setRequestProperty("x-agent-key", apiKey);
+            }
             conn.getResponseCode(); // Đọc để đảm bảo request được gửi đi
             conn.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Progress notify failed: " + e.getMessage());
         }
     }
 
-    // downLoad sortware
+    // downLoad software
     public void downloadAndInstall(String url) {
         try {
             String fileName = url.substring(url.lastIndexOf('/') + 1);
@@ -30,7 +39,8 @@ public class Command {
             String savePath = folderPath + "\\" + fileName;
 
             File dir = new File(folderPath);
-            if (!dir.exists()) dir.mkdirs();
+            if (!dir.exists())
+                dir.mkdirs();
 
             // Tải file về
             URL downloadUrl = new URL(url);
@@ -59,13 +69,26 @@ public class Command {
             out.close();
             in.close();
 
+            // Kiểm tra AI trước khi cài đặt
+            try {
+                boolean isMalware = aiService.scanFile(new File(savePath));
+                if (isMalware) {
+                    System.out.println("WARNING: Suspected malware detected, aborting install: " + savePath);
+                    sendProgressToServer(0);
+                    return;
+                }
+            } catch (Exception e) {
+                // nếu AI gặp lỗi, ghi log ngắn và tiếp tục cài đặt
+                System.err.println("AI scan failed: " + e.getMessage());
+            }
+
             // Cài đặt trực tiếp
-            String cmd = "powershell.exe Start-Process '" + savePath + "' -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-','/MERGETASKS=desktopicon' -Verb RunAs";
+            String cmd = "powershell.exe Start-Process '" + savePath
+                    + "' -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-','/MERGETASKS=desktopicon' -Verb RunAs";
             System.out.println("⚙️ Đang cài đặt: " + cmd);
             Process process = Runtime.getRuntime().exec(cmd);
             int exitCode = process.waitFor();
             System.out.println("✅ Cài đặt kết thúc với mã thoát: " + exitCode);
-
         } catch (Exception e) {
             e.printStackTrace();
         }

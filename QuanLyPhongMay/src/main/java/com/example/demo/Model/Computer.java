@@ -3,10 +3,9 @@ package com.example.demo.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-
 import java.sql.Timestamp;
 import java.util.List;
-
+import java.util.Optional; // Cần thiết cho các phương thức an toàn (nhưng tôi sẽ dùng toán tử ba ngôi)
 
 @Entity
 @Table(name = "computer")
@@ -27,27 +26,33 @@ public class Computer {
     public enum Status {
         on, off
     }
+
     public enum FirewallStatus {
         on, off, unknown
     }
+
     @Column(name = "ipAddress")
 
     private String ipAddress;
     @Column(name = "macAddress")
     private String macAddress;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "statusFirewall")
-        private FirewallStatus statusFirewall;
+    private FirewallStatus statusFirewall;
 
     @Column(name = "timestamp")
     private Timestamp timestamp;
 
-//    @OneToOne(mappedBy = "computer",cascade = CascadeType.ALL)
-//
-//    private Firewall firewall;
+    // Đã sửa từ int sang Integer để cho phép NULL từ Database
+    @Column(name = "timeUse")
+    private int timeUse;
 
-    @OneToMany(mappedBy = "computer",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL)
     private List<ComputerSoftwareStatus> softwareStatuses;
+
+    @OneToMany(mappedBy = "computer", cascade = CascadeType.ALL)
+    private List<AiNotification> aiNotifications;
 
     public String getNameComputer() {
         return nameComputer;
@@ -57,35 +62,45 @@ public class Computer {
         this.nameComputer = nameComputer;
     }
 
-//    public Firewall getFirewall() {
-//        return firewall;
-//    }
-//
-//    public void setFirewall(Firewall firewall) {
-//        this.firewall = firewall;
-//    }
+    public Computer() {
+    }
 
-    public Computer() {}
-
-    public Computer(int computerId, String nameComputer, Status status, String ipAddress, String macAddress, List<ComputerSoftwareStatus> softwareStatuses) {
+    // Constructor đã sửa để chấp nhận List<ComputerSoftwareStatus>
+    public Computer(int computerId, String nameComputer, Status status, String ipAddress, String macAddress,
+            List<ComputerSoftwareStatus> softwareStatuses) {
         this.computerId = computerId;
         this.nameComputer = nameComputer;
         this.status = status;
         this.ipAddress = ipAddress;
         this.macAddress = macAddress;
-//        this.firewall = firewall;
         this.softwareStatuses = softwareStatuses;
     }
 
-    public Computer(String nameComputer, String ipAddress,String macAddress, Status status,FirewallStatus firewallStatus, Timestamp timestamp) {
+    // Constructor đã sửa: timeUse đổi thành Integer và chấp nhận int cho đối số
+    public Computer(int computerId, String nameComputer, Status status, String ipAddress, String macAddress,
+            FirewallStatus statusFirewall, Timestamp timestamp, int timeUse,
+            List<ComputerSoftwareStatus> softwareStatuses) {
+        this.computerId = computerId;
+        this.nameComputer = nameComputer;
+        this.status = status;
+        this.ipAddress = ipAddress;
+        this.macAddress = macAddress;
+        this.statusFirewall = statusFirewall;
+        this.timestamp = timestamp;
+        this.timeUse = timeUse; // Gán int cho Integer là an toàn
+        this.softwareStatuses = softwareStatuses;
+    }
+
+    public Computer(String nameComputer, String ipAddress, String macAddress, Status status,
+            FirewallStatus firewallStatus, Timestamp timestamp) {
         this.nameComputer = nameComputer;
         this.status = status;
         this.ipAddress = ipAddress;
         this.macAddress = macAddress;
         this.statusFirewall = firewallStatus;
         this.timestamp = timestamp;
+        this.timeUse = 0; // Khởi tạo timeUse an toàn khi tạo mới
     }
-
 
     public Timestamp getTimestamp() {
         return timestamp;
@@ -93,6 +108,14 @@ public class Computer {
 
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public int getTimeUse() {
+        return timeUse;
+    }
+
+    public void setTimeUse(int timeUse) {
+        this.timeUse = timeUse;
     }
 
     public int getComputerId() {
@@ -149,5 +172,13 @@ public class Computer {
 
     public void setStatusFirewall(FirewallStatus statusFirewall) {
         this.statusFirewall = statusFirewall;
+    }
+
+    public List<AiNotification> getAiNotifications() {
+        return aiNotifications;
+    }
+
+    public void setAiNotifications(List<AiNotification> aiNotifications) {
+        this.aiNotifications = aiNotifications;
     }
 }

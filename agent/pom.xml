@@ -46,6 +46,20 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+    		<groupId>com.microsoft.onnxruntime</groupId>
+    		<artifactId>onnxruntime</artifactId>
+    		<version>1.17.0</version>
+		</dependency>
+		<dependency>
+    		<groupId>com.kichik.pecoff4j</groupId>
+    		<artifactId>pecoff4j</artifactId>
+   			<version>0.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
 
 	</dependencies>
 

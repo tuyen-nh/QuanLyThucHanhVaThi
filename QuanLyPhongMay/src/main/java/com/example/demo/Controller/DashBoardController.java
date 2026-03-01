@@ -1,14 +1,8 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Computer;
+import com.example.demo.Model.*;
 import com.example.demo.Model.Computer.Status;
-import com.example.demo.Model.ComputerSoftwareStatus;
-import com.example.demo.Model.Software;
-import com.example.demo.Model.command;
-import com.example.demo.Repository.CommandRepository;
-import com.example.demo.Repository.ComputerRepository;
-import com.example.demo.Repository.ComputerSoftwareStatusRepository;
-import com.example.demo.Repository.SoftwareRepository;
+import com.example.demo.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -16,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.security.PublicKey;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +27,9 @@ public class DashBoardController {
     private final SoftwareRepository softwareRepository;
     private final CommandRepository commandRepository;
 
+    @Autowired
+    private BlackListRepo blackListRepo;
+
     public DashBoardController(ComputerRepository computerRepository,
             ComputerSoftwareStatusRepository computerSoftwareStatus, SoftwareRepository softwareRepository,
             CommandRepository commandRepository) {
@@ -42,7 +40,6 @@ public class DashBoardController {
     }
 
     @Autowired
-
     @GetMapping("/info")
     public List<Computer> getComputerInfo() {
         return computerRepository.findAll();
@@ -61,113 +58,109 @@ public class DashBoardController {
             updatedComputer.setTimestamp(computer.getTimestamp());
             computerRepository.save(updatedComputer);
         } else {
+            computer.setTimeUse(0);
             computerRepository.save(computer);
         }
 
         return "Data received successfully";
     }
 
-
     @PostMapping("/softwareRunning")
-public ResponseEntity<String> receiveData(@RequestBody List<Map<String, Object>> data) {
-    System.out.println("i received date from agent");
-    //ghi in ra toàn bộ dữ liệu data ở đây
-    for (Map<String, Object> item : data) {
-        System.out.println(item);
+    public ResponseEntity<String> receiveData(@RequestBody List<Map<String, Object>> data) {
+        System.out.println("i received date from agent");
+        // ghi in ra toàn bộ dữ liệu data ở đây
+        for (Map<String, Object> item : data) {
+            System.out.println(item);
+        }
+
+        if (data == null || data.size() <= 1) {
+            return ResponseEntity.badRequest().body("the data is not sensible");
+        }
+
+        // Giả sử phần tử đầu là rỗng thì bỏ qua, lấy MAC từ phần tử thứ 1
+        String macAddress = (String) data.get(1).get("macAddress");
+
+        Optional<Computer> optionalComputer = computerRepository.findByMacAddress(macAddress);
+        if (optionalComputer.isEmpty()) {
+            return ResponseEntity.badRequest().body("Không tìm thấy máy tính với địa chỉ MAC: " + macAddress);
+        }
+
+        Computer computer = optionalComputer.get();
+
+        // Lấy danh sách phần mềm đang chạy
+        List<String> runningSoftwares = new ArrayList<>();
+        for (int i = 0; i < data.size(); i++) {
+            String name = (String) data.get(i).get("description");
+            if (name != null && !name.isBlank()) {
+                runningSoftwares.add(name);
+            }
+        }
+
+        // Cập nhật trạng thái các phần mềm không còn chạy
+        List<ComputerSoftwareStatus> existingStatuses = computerSoftwareStatus.findByComputer(computer);
+        for (ComputerSoftwareStatus status : existingStatuses) {
+            if (!runningSoftwares.contains(status.getSoftware().getNameSoftware())) {
+                status.setStatus(ComputerSoftwareStatus.Status.stopped);
+                computerSoftwareStatus.save(status);
+            }
+        }
+
+        // Cập nhật trạng thái phần mềm đang chạy
+        for (String processName : runningSoftwares) {
+            Software software = softwareRepository.findByNameSoftware(processName)
+                    .orElseGet(() -> {
+                        Software newSoftware = new Software();
+                        newSoftware.setNameSoftware(processName);
+                        return softwareRepository.save(newSoftware);
+                    });
+
+            Optional<ComputerSoftwareStatus> existingStatus = computerSoftwareStatus.findByComputerAndSoftware(computer,
+                    software);
+
+            if (existingStatus.isEmpty()) {
+                ComputerSoftwareStatus css = new ComputerSoftwareStatus();
+                css.setComputer(computer);
+                css.setSoftware(software);
+                css.setStatus(ComputerSoftwareStatus.Status.running);
+                computerSoftwareStatus.save(css);
+            } else if (existingStatus.get().getStatus() != ComputerSoftwareStatus.Status.running) {
+                ComputerSoftwareStatus css = existingStatus.get();
+                css.setStatus(ComputerSoftwareStatus.Status.running);
+                computerSoftwareStatus.save(css);
+            }
+        }
+
+        return ResponseEntity.ok("Received and processed software data");
     }
 
-    if (data == null || data.size() <= 1) {
-        return ResponseEntity.badRequest().body("the data is not sensible");
-    }
+    // Controller method to send software download command to Agent
+    @PostMapping("/sendCommandToAgent")
+    public ResponseEntity<String> sendCommandToAgent(@RequestBody Map<String, String> payload) {
+        String macAddress = payload.get("macAddress");
+        String softwareName = payload.get("softwareName");
 
-    // Giả sử phần tử đầu là rỗng thì bỏ qua, lấy MAC từ phần tử thứ 1
-    String macAddress = (String) data.get(1).get("macAddress");
+        Optional<Computer> computerOpt = computerRepository.findByMacAddress(macAddress);
+        Optional<command> commandOpt = commandRepository.findByMaLenh(softwareName);
 
-    Optional<Computer> optionalComputer = computerRepository.findByMacAddress(macAddress);
-    if (optionalComputer.isEmpty()) {
-        return ResponseEntity.badRequest().body("Không tìm thấy máy tính với địa chỉ MAC: " + macAddress);
-    }
+        if (computerOpt.isPresent() && commandOpt.isPresent()) {
+            String agentUrl = "http://" + computerOpt.get().getIpAddress() + ":8085/commands";
+            String softwareUrl = commandOpt.get().getSoftware().getUrl();
 
-    Computer computer = optionalComputer.get();
-
-    // Lấy danh sách phần mềm đang chạy
-    List<String> runningSoftwares = new ArrayList<>();
-    for (int i = 1; i < data.size(); i++) {
-        String name = (String) data.get(i).get("name");
-        if (name != null && !name.isBlank()) {
-            runningSoftwares.add(name);
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                Map<String, String> body = new HashMap<>();
+                body.put("url", softwareUrl);
+                restTemplate.postForObject(agentUrl, body, String.class);
+                return ResponseEntity.ok("Gửi thành công đến máy " + macAddress);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Gửi thất bại: " + e.getMessage());
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Không tìm thấy máy hoặc phần mềm");
         }
     }
-
-    // Cập nhật trạng thái các phần mềm không còn chạy
-    List<ComputerSoftwareStatus> existingStatuses = computerSoftwareStatus.findByComputer(computer);
-    for (ComputerSoftwareStatus status : existingStatuses) {
-        if (!runningSoftwares.contains(status.getSoftware().getNameSoftware())) {
-            status.setStatus(ComputerSoftwareStatus.Status.stopped);
-            computerSoftwareStatus.save(status);
-        }
-    }
-
-    // Cập nhật trạng thái phần mềm đang chạy
-    for (String processName : runningSoftwares) {
-        Software software = softwareRepository.findByNameSoftware(processName)
-    .orElseGet(() -> {
-        Software newSoftware = new Software();
-        newSoftware.setNameSoftware(processName);
-        return softwareRepository.save(newSoftware);
-    });
-
-
-        Optional<ComputerSoftwareStatus> existingStatus =
-                computerSoftwareStatus.findByComputerAndSoftware(computer, software);
-
-        if (existingStatus.isEmpty()) {
-            ComputerSoftwareStatus css = new ComputerSoftwareStatus();
-            css.setComputer(computer);
-            css.setSoftware(software);
-            css.setStatus(ComputerSoftwareStatus.Status.running);
-            computerSoftwareStatus.save(css);
-        } else if (existingStatus.get().getStatus() != ComputerSoftwareStatus.Status.running) {
-            ComputerSoftwareStatus css = existingStatus.get();
-            css.setStatus(ComputerSoftwareStatus.Status.running);
-            computerSoftwareStatus.save(css);
-        }
-    }
-
-    return ResponseEntity.ok("Received and processed software data");
-}
-
-
-    // === SERVER SIDE (Spring Boot) ===
-// Controller method to send software download command to Agent
-@PostMapping("/sendCommandToAgent")
-public ResponseEntity<String> sendCommandToAgent(@RequestBody Map<String, String> payload) {
-    String macAddress = payload.get("macAddress");
-    String softwareName = payload.get("softwareName");
-
-    Optional<Computer> computerOpt = computerRepository.findByMacAddress(macAddress);
-    Optional<command> commandOpt = commandRepository.findByMaLenh(softwareName);
-
-    if (computerOpt.isPresent() && commandOpt.isPresent()) {
-        String agentUrl = "http://" + computerOpt.get().getIpAddress() + ":8085/commands";
-        String softwareUrl = commandOpt.get().getSoftware().getUrl(); 
-
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            Map<String, String> body = new HashMap<>();
-            body.put("url", softwareUrl);
-            restTemplate.postForObject(agentUrl, body, String.class);
-            return ResponseEntity.ok("Gửi thành công đến máy " + macAddress);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Gửi thất bại: " + e.getMessage());
-        }
-    } else {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Không tìm thấy máy hoặc phần mềm");
-    }
-}
-
 
     // nhân phần trăm cài đặt được của phần mềm
     private int latestProgress = 0;
@@ -217,6 +210,49 @@ public ResponseEntity<String> sendCommandToAgent(@RequestBody Map<String, String
             }
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy máy có MAC: " + macAddress);
+        }
+    }
+
+    // gửi danh sách BlackList cho clientAdmin
+    @GetMapping("/BlackList")
+    public List<BlackList> getBlackList() {
+        return blackListRepo.findAll();
+    }
+
+    // update TimeUse
+    @PostMapping("/updateUseTime")
+    public ResponseEntity<String> updateUseTime(@RequestBody Map<String, Object> payload) {
+        String macAddress = (String) payload.get("macAddress");
+        // Lấy thời lượng sử dụng phiên (tính bằng giây)
+        Number sessionDurationNumber = (Number) payload.get("sessionDurationSeconds");
+        // Chuyển đổi sang phút (giả định TimeUse trong DB là phút)
+        int sessionDurationSeconds = sessionDurationNumber.intValue();
+        int sessionDurationMinutes = sessionDurationSeconds / 60;
+        try {
+            Optional<Computer> existingComputerOpt = computerRepository.findByMacAddress(macAddress);
+            if (existingComputerOpt.isPresent()) {
+                Computer updatedComputer = existingComputerOpt.get();
+
+                int currentTotalTimeMinutes = 0;
+
+                try {
+                    currentTotalTimeMinutes = updatedComputer.getTimeUse();
+                } catch (Exception e) {
+                    currentTotalTimeMinutes = 0;
+                }
+                // Tính TỔNG thời gian sử dụng mới = Tổng cũ + Thời lượng phiên mới
+                int newTotalTimeMinutes = currentTotalTimeMinutes + sessionDurationMinutes;
+                updatedComputer.setTimeUse(newTotalTimeMinutes);
+                computerRepository.save(updatedComputer);
+                return ResponseEntity.ok("Đã cộng dồn thành công " + sessionDurationMinutes + " phút.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy máy tính với MAC: " + macAddress);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi Server khi cập nhật thời gian sử dụng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi Server khi cập nhật thời gian sử dụng.");
         }
     }
 
